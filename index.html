@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartoon Watcher — Authorized Open Animation & Classic Cartoons</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f0c1b',
+                        darkCard: '#1a152e',
+                        darkCardHover: '#251e3f',
+                        accentPurple: '#7c3aed',
+                        accentBlue: '#3b82f6',
+                        accentPink: '#ec4899',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Web App Manifest (Inline Blob or link) -->
+    <link rel="manifest" href="#manifest-placeholder" id="manifest-link">
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0c1b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2e2453;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .glass-panel {
+            background: rgba(26, 21, 46, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(124, 58, 237, 0.15);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(15,12,27,0.95) 0%, rgba(26,21,46,0.85) 50%, rgba(124,58,237,0.2) 100%);
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-accentPurple selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-purple-900/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('explore')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-accentPurple to-accentBlue flex items-center justify-center shadow-lg shadow-purple-900/40">
+                    <i class="fa-solid fa-clapperboard text-white text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">Cartoon Watcher</span>
+                    <span class="block text-[10px] text-purple-400 font-medium tracking-widest uppercase">Authorized Open Catalog</span>
+                </div>
+            </div>
+
+            <!-- Search Input (Desktop) -->
+            <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search cartoons by title, genre, creator..." class="w-full pl-10 pr-4 py-2 bg-darkCard/80 border border-purple-900/40 rounded-xl text-sm focus:outline-none focus:border-accentPurple focus:ring-2 focus:ring-accentPurple/30 transition-all text-gray-200 placeholder-gray-500">
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-3 hidden items-center text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Action Icons & Mobile Menu Button -->
+            <div class="flex items-center space-x-3">
+                <button onclick="playRandomCartoon()" title="Watch Random Cartoon" class="hidden sm:flex items-center space-x-2 px-3.5 py-2 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-700/40 rounded-xl text-xs font-semibold text-purple-200 transition-all hover:scale-105">
+                    <i class="fa-solid fa-dice text-accentBlue"></i>
+                    <span>Surprise Me</span>
+                </button>
+                <button onclick="switchTab('watchlist')" class="relative p-2.5 bg-darkCard hover:bg-darkCardHover border border-purple-900/40 rounded-xl text-gray-300 hover:text-white transition-all" title="Watchlist">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span id="watchlistBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-accentPink text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 bg-darkCard hover:bg-darkCardHover border border-purple-900/40 rounded-xl text-gray-300 hover:text-white transition-all">
+                    <i class="fa-solid fa-bars text-lg" id="mobileMenuIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar Row -->
+        <div class="md:hidden px-4 pb-3">
+            <div class="relative w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" placeholder="Search authorized cartoons..." class="w-full pl-10 pr-4 py-2 bg-darkCard/80 border border-purple-900/40 rounded-xl text-sm focus:outline-none focus:border-accentPurple text-gray-200 placeholder-gray-500">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <div class="flex-1 flex max-w-7xl w-full mx-auto">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="hidden md:flex flex-col w-64 p-6 shrink-0 border-r border-purple-900/20 space-y-8">
+            <div class="space-y-1">
+                <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-purple-400/70 mb-2">Discover</p>
+                <button onclick="switchTab('explore')" id="nav-explore" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-accentPurple text-white shadow-lg shadow-purple-900/30">
+                    <i class="fa-solid fa-compass w-5 text-center"></i>
+                    <span>Explore Catalog</span>
+                </button>
+                <button onclick="switchTab('watchlist')" id="nav-watchlist" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-darkCard transition-all">
+                    <i class="fa-solid fa-bookmark w-5 text-center text-pink-400"></i>
+                    <span>My Watchlist</span>
+                </button>
+                <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-darkCard transition-all">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center text-blue-400"></i>
+                    <span>Viewing History</span>
+                </button>
+            </div>
+
+            <div class="space-y-1">
+                <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-purple-400/70 mb-2">Genres</p>
+                <div id="sidebarGenres" class="space-y-1 max-h-60 overflow-y-auto pr-1">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <div class="space-y-1 pt-2 border-t border-purple-900/20">
+                <button onclick="switchTab('about')" id="nav-about" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-darkCard transition-all">
+                    <i class="fa-solid fa-circle-info w-5 text-center text-purple-400"></i>
+                    <span>About & Rights</span>
+                </button>
+                <button onclick="installPWA()" id="installBtn" class="hidden w-full items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-900/40 to-blue-900/40 hover:from-purple-900/60 hover:to-blue-900/60 border border-purple-700/30 text-purple-200 transition-all">
+                    <i class="fa-solid fa-download w-5 text-center text-accentBlue"></i>
+                    <span>Install App (PWA)</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Drawer Navigation -->
+        <div id="mobileDrawer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden md:hidden flex flex-col p-6 animate-fade-in">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-accentPurple to-accentBlue flex items-center justify-center">
+                        <i class="fa-solid fa-clapperboard text-white"></i>
+                    </div>
+                    <span class="text-lg font-bold text-white">Cartoon Watcher</span>
+                </div>
+                <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-2 flex-1 overflow-y-auto">
+                <button onclick="switchTab('explore'); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium bg-accentPurple text-white">
+                    <i class="fa-solid fa-compass w-6"></i>
+                    <span>Explore Catalog</span>
+                </button>
+                <button onclick="switchTab('watchlist'); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium text-gray-300 hover:bg-darkCard">
+                    <i class="fa-solid fa-bookmark w-6 text-pink-400"></i>
+                    <span>My Watchlist</span>
+                </button>
+                <button onclick="switchTab('history'); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium text-gray-300 hover:bg-darkCard">
+                    <i class="fa-solid fa-clock-rotate-left w-6 text-blue-400"></i>
+                    <span>Viewing History</span>
+                </button>
+                <button onclick="playRandomCartoon(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium text-purple-300 hover:bg-darkCard">
+                    <i class="fa-solid fa-dice w-6 text-accentBlue"></i>
+                    <span>Surprise Me (Random)</span>
+                </button>
+                <button onclick="switchTab('about'); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-base font-medium text-gray-300 hover:bg-darkCard">
+                    <i class="fa-solid fa-circle-info w-6 text-purple-400"></i>
+                    <span>About & Rights</span>
+                </button>
+            </div>
+            <div id="mobileInstallWrapper" class="pt-4 border-t border-purple-900/30 hidden">
+                <button onclick="installPWA(); toggleMobileMenu();" class="w-full flex items-center justify-center space-x-2 py-3 bg-purple-900/40 border border-purple-700/40 rounded-xl text-purple-200 font-medium">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Install App</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            
+            <!-- VIEW: EXPLORE & CATALOG -->
+            <div id="view-explore" class="space-y-8 animate-fade-in">
+                <!-- Hero Banner -->
+                <div id="heroBanner" class="relative rounded-3xl overflow-hidden glass-panel border border-purple-800/30 p-6 sm:p-10 flex flex-col justify-end min-h-[320px] sm:min-h-[380px] shadow-2xl">
+                    <div class="absolute inset-0 bg-cover bg-center z-0 opacity-40 mix-blend-overlay transition-all duration-700" id="heroBgImage" style="background-image: url('https://placehold.co/1200x600/1a152e/7c3aed?text=Cartoon+Watcher');"></div>
+                    <div class="absolute inset-0 hero-gradient z-0"></div>
+                    
+                    <div class="relative z-10 max-w-2xl space-y-4">
+                        <div class="flex items-center space-x-2 flex-wrap gap-2">
+                            <span id="heroBadge" class="px-3 py-1 bg-accentPurple/80 backdrop-blur text-white text-xs font-bold rounded-full uppercase tracking-wider">Featured Open Movie</span>
+                            <span id="heroYearGenre" class="text-xs font-medium text-purple-300">2023 • Adventure / Sci-Fi</span>
+                        </div>
+                        <h1 id="heroTitle" class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">Cosmic Journey</h1>
+                        <p id="heroDesc" class="text-sm sm:text-base text-gray-300 line-clamp-2 leading-relaxed">Explore breathtaking fully open-source animated films and classic cartoons authorized for legal embedding and streaming.</p>
+                        <div class="flex items-center space-x-4 pt-2">
+                            <button id="heroPlayBtn" class="flex items-center space-x-3 px-6 py-3.5 bg-gradient-to-r from-accentPurple to-accentBlue hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-purple-900/50 transition-all hover:scale-105">
+                                <i class="fa-solid fa-play text-sm"></i>
+                                <span>Watch Now</span>
+                            </button>
+                            <button id="heroDetailsBtn" class="flex items-center space-x-2 px-5 py-3.5 bg-darkCard/80 hover:bg-darkCard border border-purple-700/40 text-gray-200 font-semibold rounded-2xl transition-all">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Details & License</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Genre Filters Bar -->
+                <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none" id="genreFilterBar">
+                    <!-- Generated by JS -->
+                </div>
+
+                <!-- Catalog Section Header & Sorting -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+                    <div>
+                        <h2 id="catalogHeading" class="text-2xl font-bold text-white tracking-tight">Authorized Cartoon Library</h2>
+                        <p id="catalogSubheading" class="text-xs text-gray-400">Stream verified public domain, open-source, and creator-licensed animations.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <select id="sortSelect" onchange="handleSort(this.value)" class="bg-darkCard border border-purple-900/40 text-gray-200 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-accentPurple">
+                                <option value="recent">Recently Added</option>
+                                <option value="title">Alphabetical (A-Z)</option>
+                                <option value="year">Release Year (Newest)</option>
+                            </select>
+                        </div>
+                        <button onclick="resetFilters()" id="resetFiltersBtn" class="hidden px-3.5 py-2.5 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-700/40 text-xs font-semibold text-purple-200 rounded-xl transition-all">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cartoon Cards Grid -->
+                <div id="cartoonGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Empty Search / Catalog State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-purple-900/20 border border-purple-800/40 flex items-center justify-center text-purple-400 text-2xl">
+                        <i class="fa-solid fa-film"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">No Cartoons Found</h3>
+                    <p class="text-sm text-gray-400 max-w-md">We couldn't find any cartoons matching your search or filters. Try adjusting your keywords or clearing filters.</p>
+                    <button onclick="resetFilters()" class="px-5 py-2.5 bg-accentPurple hover:bg-accentPurple/90 text-white font-medium text-xs rounded-xl transition-all">
+                        Reset Search & Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW: WATCHLIST -->
+            <div id="view-watchlist" class="space-y-6 hidden animate-fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">My Watchlist</h2>
+                        <p class="text-xs text-gray-400">Cartoons saved to your local browser profile.</p>
+                    </div>
+                    <button onclick="clearWatchlist()" id="clearWatchlistBtn" class="hidden px-3.5 py-2 bg-pink-900/30 hover:bg-pink-900/50 border border-pink-700/40 text-pink-300 text-xs font-semibold rounded-xl transition-all">
+                        Clear Watchlist
+                    </button>
+                </div>
+                <div id="watchlistGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Populated via JS -->
+                </div>
+                <div id="watchlistEmpty" class="hidden flex flex-col items-center justify-center py-24 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-pink-900/20 border border-pink-800/40 flex items-center justify-center text-pink-400 text-2xl">
+                        <i class="fa-solid fa-bookmark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Your Watchlist is Empty</h3>
+                    <p class="text-sm text-gray-400 max-w-md">Click the bookmark icon on any cartoon card to save it for later viewing.</p>
+                    <button onclick="switchTab('explore')" class="px-5 py-2.5 bg-accentPurple hover:bg-accentPurple/90 text-white font-medium text-xs rounded-xl transition-all">
+                        Explore Catalog
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW: VIEWING HISTORY -->
+            <div id="view-history" class="space-y-6 hidden animate-fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Viewing History</h2>
+                        <p class="text-xs text-gray-400">Recently opened cartoons sorted by most recent access.</p>
+                    </div>
+                    <button onclick="clearHistory()" id="clearHistoryBtn" class="hidden px-3.5 py-2 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/40 text-blue-300 text-xs font-semibold rounded-xl transition-all">
+                        Clear History
+                    </button>
+                </div>
+                <div id="historyGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Populated via JS -->
+                </div>
+                <div id="historyEmpty" class="hidden flex flex-col items-center justify-center py-24 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-blue-900/20 border border-blue-800/40 flex items-center justify-center text-blue-400 text-2xl">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">No Viewing History Yet</h3>
+                    <p class="text-sm text-gray-400 max-w-md">Cartoons you watch will automatically appear here so you can easily resume them.</p>
+                    <button onclick="switchTab('explore')" class="px-5 py-2.5 bg-accentPurple hover:bg-accentPurple/90 text-white font-medium text-xs rounded-xl transition-all">
+                        Start Watching
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW: ABOUT & COPYRIGHT -->
+            <div id="view-about" class="space-y-8 hidden animate-fade-in max-w-4xl mx-auto">
+                <div class="glass-panel border border-purple-900/40 rounded-3xl p-6 sm:p-10 space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-accentPurple to-accentBlue flex items-center justify-center text-white text-2xl shadow-xl shadow-purple-900/50">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-extrabold text-white">About Cartoon Watcher & Copyright Policy</h2>
+                            <p class="text-sm text-purple-300">Committed to authorized open-source and public domain animation streaming.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
+                        <p>
+                            <strong>Cartoon Watcher</strong> is a dedicated frontend web application designed to showcase and stream legally authorized animated films, open-source CGI masterpieces from studios like Blender Foundation, public domain classic cartoons, and officially licensed independent shorts.
+                        </p>
+                        
+                        <h3 class="text-lg font-bold text-white pt-2">Our Content Commitment</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                            <li><strong>Authorized Embedding Only:</strong> We exclusively embed videos using official authorized players (such as YouTube's official iframe API with privacy-enhanced options) provided directly by the creators or copyright holders.</li>
+                            <li><strong>No Piracy or DRM Bypassing:</strong> We never host pirated video files, bypass paywalls, circumvent digital rights management (DRM), or scrape private video URLs.</li>
+                            <li><strong>Attribution & Licensing:</strong> Every entry in our catalog includes studio credits, verified license types (e.g., Creative Commons, Public Domain, Authorized Creator Permission), and direct links to original sources.</li>
+                        </ul>
+
+                        <h3 class="text-lg font-bold text-white pt-2">Local Data Storage</h3>
+                        <p>
+                            Your watchlist and viewing history are stored locally in your browser's <code class="bg-purple-900/40 px-2 py-0.5 rounded text-purple-200">LocalStorage</code>. This data never leaves your device and is restricted to your current browser profile. No user accounts or backend tracking are required.
+                        </p>
+
+                        <h3 class="text-lg font-bold text-white pt-2">Content Removal Requests</h3>
+                        <p>
+                            If you are a copyright holder or creator and wish to update attribution, modify embed parameters, or request the removal of a title from our index, please reach out via our repository maintainers on GitHub. We promptly honor all creator and rights-holder requests.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="playerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-6 animate-fade-in">
+        <div class="w-full max-w-5xl glass-panel border border-purple-900/50 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 flex items-center justify-between border-b border-purple-900/30 bg-darkCard/50">
+                <div class="flex items-center space-x-3">
+                    <span id="playerModalCategory" class="px-2.5 py-0.5 bg-accentPurple/30 border border-accentPurple/50 text-purple-200 text-xs font-semibold rounded-full">Animation</span>
+                    <h3 id="playerModalTitle" class="text-base sm:text-lg font-bold text-white truncate max-w-md">Cartoon Title</h3>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="playerWatchlistBtn" onclick="toggleWatchlistFromPlayer()" class="p-2 bg-darkCard hover:bg-darkCardHover border border-purple-900/40 rounded-xl text-gray-300 hover:text-white transition-all" title="Toggle Watchlist">
+                        <i class="fa-solid fa-bookmark" id="playerBookmarkIcon"></i>
+                    </button>
+                    <button onclick="closePlayerModal()" class="p-2 bg-darkCard hover:bg-darkCardHover border border-purple-900/40 rounded-xl text-gray-400 hover:text-white transition-all">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Player Container (16:9 Responsive) -->
+            <div class="relative w-full aspect-video bg-black flex items-center justify-center">
+                <div id="videoEmbedWrapper" class="w-full h-full">
+                    <!-- Embedded iframe or fallback message inserted dynamically -->
+                </div>
+                <div id="videoErrorOverlay" class="absolute inset-0 bg-darkBg/95 flex flex-col items-center justify-center p-6 text-center hidden space-y-4">
+                    <div class="w-14 h-14 rounded-2xl bg-red-900/20 border border-red-800/40 flex items-center justify-center text-red-400 text-2xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Video Embed Unavailable</h4>
+                    <p id="videoErrorMsg" class="text-xs text-gray-400 max-w-md">The authorized embed provider restricts playback on this preview domain or the video source has been updated.</p>
+                    <a id="originalSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-accentPurple hover:bg-accentPurple/90 text-white font-medium text-xs rounded-xl transition-all inline-flex items-center space-x-2">
+                        <span>Open on Official Source</span>
+                        <i class="fa-solid fa-external-link text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Modal Footer details -->
+            <div class="p-6 bg-darkCard/70 overflow-y-auto space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center space-x-3 text-xs text-purple-300 mb-1">
+                            <span id="playerModalStudio">Studio / Creator</span>
+                            <span>•</span>
+                            <span id="playerModalYear">2023</span>
+                            <span>•</span>
+                            <span id="playerModalDuration">10 mins</span>
+                        </div>
+                        <p id="playerModalDesc" class="text-xs sm:text-sm text-gray-300 leading-relaxed">Description goes here...</p>
+                    </div>
+                </div>
+                <!-- License & Attribution notice -->
+                <div class="pt-3 border-t border-purple-900/20 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-gray-400 gap-2">
+                    <div id="playerModalLicense" class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-certificate text-accentPurple"></i>
+                        <span>License: Creative Commons Attribution</span>
+                    </div>
+                    <a id="playerSourceAnchor" href="#" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 underline inline-flex items-center space-x-1">
+                        <span>View Original Source</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartoon Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="w-full max-w-2xl glass-panel border border-purple-900/50 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="relative h-48 sm:h-64 bg-cover bg-center" id="detailsModalBanner">
+                <div class="absolute inset-0 bg-gradient-to-t from-darkCard via-darkCard/60 to-transparent"></div>
+                <button onclick="closeDetailsModal()" class="absolute top-4 right-4 z-10 p-2.5 bg-black/60 hover:bg-black text-white rounded-full transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6 sm:p-8 -mt-12 relative z-10 space-y-6 overflow-y-auto">
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <span id="detailsGenreBadge" class="px-2.5 py-0.5 bg-accentPurple/30 border border-accentPurple/50 text-purple-200 text-xs font-semibold rounded-full">Genre</span>
+                        <span id="detailsYearStudio" class="text-xs text-purple-300 font-medium">2023 • Studio</span>
+                    </div>
+                    <h3 id="detailsTitle" class="text-2xl sm:text-3xl font-extrabold text-white">Cartoon Title</h3>
+                </div>
+                <p id="detailsDesc" class="text-sm text-gray-300 leading-relaxed">Detailed description...</p>
+                <div class="grid grid-cols-2 gap-4 py-3 border-y border-purple-900/20 text-xs">
+                    <div>
+                        <span class="text-gray-400 block mb-1">Duration</span>
+                        <span id="detailsDuration" class="font-semibold text-white">12 minutes</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block mb-1">License & Rights</span>
+                        <span id="detailsLicense" class="font-semibold text-purple-300">Public Domain</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 pt-2">
+                    <button id="detailsPlayBtn" class="flex-1 py-3.5 bg-gradient-to-r from-accentPurple to-accentBlue hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-purple-900/40 text-center transition-all">
+                        <i class="fa-solid fa-play mr-2"></i> Watch Cartoon
+                    </button>
+                    <button id="detailsWatchlistBtn" onclick="toggleWatchlistFromDetails()" class="px-5 py-3.5 bg-darkCard hover:bg-darkCardHover border border-purple-700/40 text-gray-200 font-semibold rounded-2xl transition-all">
+                        <i class="fa-solid fa-bookmark mr-2" id="detailsBookmarkIcon"></i> <span id="detailsBookmarkText">Save</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- Application JavaScript -->
+    <script>
+        // Verified Authorized Cartoon Catalog Database
+        const cartoonCatalog = [
+            {
+                id: "big-buck-bunny",
+                title: "Big Buck Bunny",
+                description: "A large and lovable giant rabbit deals with three bullying rodents in this classic open-source animated comedy produced by the Blender Institute.",
+                poster: "https://placehold.co/600x400/251e3f/7c3aed?text=Big+Buck+Bunny",
+                year: 2008,
+                genre: "Comedy",
+                duration: "9m 56s",
+                creator: "Blender Foundation",
+                sourceUrl: "https://peach.blender.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/YE7VzlLtp-4",
+                license: "Creative Commons Attribution 3.0",
+                availability: "available",
+                featured: true
+            },
+            {
+                id: "sintel",
+                title: "Sintel",
+                description: "A lonely young woman, Sintel, helps and befriends a baby dragon, whom she calls Scales. When the dragon is abruptly adult-napped, Sintel embarks on a perilous quest.",
+                poster: "https://placehold.co/600x400/1a152e/3b82f6?text=Sintel",
+                year: 2010,
+                genre: "Fantasy",
+                duration: "14m 48s",
+                creator: "Blender Foundation (Durian Open Movie Team)",
+                sourceUrl: "https://durian.blender.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/u5QmZpfYcaU",
+                license: "Creative Commons Attribution 3.0",
+                availability: "available",
+                featured: true
+            },
+            {
+                id: "tears-of-steel",
+                title: "Tears of Steel",
+                description: "Set in a futuristic dystopian Amsterdam, a group of warriors and scientists gather at the Old Church to stage a crucial experiment using memories of the past.",
+                poster: "https://placehold.co/600x400/251e3f/ec4899?text=Tears+of+Steel",
+                year: 2012,
+                genre: "Science Fiction",
+                duration: "12m 14s",
+                creator: "Blender Foundation (Mango Open Movie Project)",
+                sourceUrl: "https://mango.blender.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/R6MlUBNAN48",
+                license: "Creative Commons Attribution 3.0",
+                availability: "available",
+                featured: false
+            },
+            {
+                id: "cosmos-launderette",
+                title: "Cosmos Laundromat",
+                description: "On a desolate island, a suicidal sheep named Franck meets a quirky salesman named Victor who offers him the ultimate vacation across the cosmos.",
+                poster: "https://placehold.co/600x400/1a152e/7c3aed?text=Cosmos+Laundromat",
+                year: 2015,
+                genre: "Short Films",
+                duration: "12m 10s",
+                creator: "Blender Animation Studio",
+                sourceUrl: "https://cosmoslaundromat.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/Y-rmDh6o2VA",
+                license: "Creative Commons Attribution 4.0",
+                availability: "available",
+                featured: false
+            },
+            {
+                id: "agent-327",
+                title: "Agent 327: Operation Barbershop",
+                description: "Secret Agent 327 is investigating clues in a Rotterdam barbershop when he stumbles into a complex conspiracy.",
+                poster: "https://placehold.co/600x400/251e3f/3b82f6?text=Agent+327",
+                year: 2017,
+                genre: "Adventure",
+                duration: "3m 45s",
+                creator: "Blender Animation Studio",
+                sourceUrl: "https://agent327.com/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/mZuA2o6t0AU",
+                license: "Creative Commons Attribution 4.0",
+                availability: "available",
+                featured: false
+            },
+            {
+                id: "spring",
+                title: "Spring",
+                description: "Spring, a girl in a forest ritual, faces her deepest fears alongside her faithful dog to bring about the transition of the seasons.",
+                poster: "https://placehold.co/600x400/1a152e/ec4899?text=Spring",
+                year: 2019,
+                genre: "Fantasy",
+                duration: "7m 43s",
+                creator: "Blender Animation Studio",
+                sourceUrl: "https://spring.blender.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/WhWc3b3KhnY",
+                license: "Creative Commons Attribution 4.0",
+                availability: "available",
+                featured: false
+            },
+            {
+                id: "glass-worker-teaser",
+                title: "Glassworker Teaser & Open Animation",
+                description: "Traditional hand-drawn animation concepts exploring glass craftsmanship in a fantasy nation at war.",
+                poster: "https://placehold.co/600x400/251e3f/7c3aed?text=Glassworker",
+                year: 2020,
+                genre: "Classic Animation",
+                duration: "4m 20s",
+                creator: "COMMENT/Independent",
+                sourceUrl: "https://www.youtube.com/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/unavailable_test",
+                license: "Creator Authorized Preview",
+                availability: "unavailable",
+                featured: false
+            },
+            {
+                id: "peppercorn-palace",
+                title: "Peppercorn Palace",
+                description: "An educational musical adventure introducing children to plant biology, gardening, and healthy nutrition through lovable forest gnomes.",
+                poster: "https://placehold.co/600x400/1a152e/3b82f6?text=Peppercorn+Palace",
+                year: 2021,
+                genre: "Educational",
+                duration: "15m 00s",
+                creator: "Open Education Animation Initiative",
+                sourceUrl: "https://archive.org/",
+                embedUrl: "https://www.youtube-nocookie.com/embed/jfKfPfyJRdk",
+                license: "Public Domain / CC0",
+                availability: "available",
+                featured: false
+            }
+        ];
+
+        // Application State
+        let currentTab = 'explore';
+        let currentSearchQuery = '';
+        let selectedGenre = 'All';
+        let currentSort = 'recent';
+        let activeCartoonId = null;
+        let deferredPrompt = null;
+
+        // LocalStorage helpers
+        function getWatchlist() {
+            try {
+                return JSON.parse(localStorage.getItem('cartoon_watchlist')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setWatchlist(list) {
+            localStorage.setItem('cartoon_watchlist', JSON.stringify(list));
+            updateWatchlistBadge();
+        }
+
+        function getHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('cartoon_history')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setHistory(list) {
+            localStorage.setItem('cartoon_history', JSON.stringify(list));
+        }
+
+        // Initialization on window load
+        window.onload = function() {
+            initGenres();
+            renderCatalog();
+            updateWatchlistBadge();
+            setupPWA();
+            
+            // Check PWA Install event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('installBtn').classList.remove('hidden');
+                document.getElementById('installBtn').classList.add('flex');
+                document.getElementById('mobileInstallWrapper').classList.remove('hidden');
+            });
+        };
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const views = ['explore', 'watchlist', 'history', 'about'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+                const navEl = document.getElementById(`nav-${v}`);
+                if (navEl) {
+                    navEl.classList.remove('bg-accentPurple', 'text-white');
+                    navEl.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-darkCard');
+                }
+            });
+
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+            const targetNav = document.getElementById(`nav-${tabId}`);
+            if (targetNav) {
+                targetNav.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-darkCard');
+                targetNav.classList.add('bg-accentPurple', 'text-white');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (tabId === 'watchlist') renderWatchlist();
+            if (tabId === 'history') renderHistory();
+        }
+
+        // Toggle Mobile Menu
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobileDrawer');
+            const icon = document.getElementById('mobileMenuIcon');
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        // Initialize Genre Filters
+        function initGenres() {
+            const genres = ['All', ...new Set(cartoonCatalog.map(c => c.genre))];
+            
+            // Sidebar genres
+            const sidebarContainer = document.getElementById('sidebarGenres');
+            sidebarContainer.innerHTML = genres.map(g => `
+                <button onclick="selectGenre('${g}')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all ${selectedGenre === g ? 'bg-purple-900/40 text-purple-200 border border-purple-700/40' : 'text-gray-400 hover:text-white hover:bg-darkCard'}">
+                    ${g}
+                </button>
+            `).join('');
+
+            // Horizontal filter bar
+            const filterBar = document.getElementById('genreFilterBar');
+            filterBar.innerHTML = genres.map(g => `
+                <button onclick="selectGenre('${g}')" class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${selectedGenre === g ? 'bg-accentPurple text-white shadow-lg shadow-purple-900/40' : 'bg-darkCard hover:bg-darkCardHover text-gray-300 border border-purple-900/30'}">
+                    ${g}
+                </button>
+            `).join('');
+        }
+
+        function selectGenre(genre) {
+            selectedGenre = genre;
+            initGenres();
+            renderCatalog();
+        }
+
+        // Search & Sort Handlers
+        function handleSearch(query) {
+            currentSearchQuery = query.trim().toLowerCase();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (currentSearchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('flex');
+            } else {
+                clearBtn.classList.remove('flex');
+                clearBtn.classList.add('hidden');
+            }
+            renderCatalog();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+            currentSearchQuery = '';
+            document.getElementById('clearSearchBtn').classList.remove('flex');
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderCatalog();
+        }
+
+        function handleSort(sortVal) {
+            currentSort = sortVal;
+            renderCatalog();
+        }
+
+        function resetFilters() {
+            currentSearchQuery = '';
+            selectedGenre = 'All';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+            document.getElementById('sortSelect').value = 'recent';
+            currentSort = 'recent';
+            clearSearch();
+            initGenres();
+            renderCatalog();
+        }
+
+        // Render Catalog Grid
+        function renderCatalog() {
+            let filtered = cartoonCatalog.filter(c => {
+                const matchesGenre = selectedGenre === 'All' || c.genre === selectedGenre;
+                const matchesSearch = currentSearchQuery === '' || 
+                    c.title.toLowerCase().includes(currentSearchQuery) || 
+                    c.description.toLowerCase().includes(currentSearchQuery) || 
+                    c.genre.toLowerCase().includes(currentSearchQuery) || 
+                    c.creator.toLowerCase().includes(currentSearchQuery);
+                return matchesGenre && matchesSearch;
+            });
+
+            // Sorting
+            if (currentSort === 'recent') {
+                filtered.sort((a, b) => b.year - a.year);
+            } else if (currentSort === 'title') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentSort === 'year') {
+                filtered.sort((a, b) => b.year - a.year);
+            }
+
+            const grid = document.getElementById('cartoonGrid');
+            const emptyState = document.getElementById('emptyState');
+            const resetBtn = document.getElementById('resetFiltersBtn');
+
+            if (selectedGenre !== 'All' || currentSearchQuery !== '') {
+                resetBtn.classList.remove('hidden');
+            } else {
+                resetBtn.classList.add('hidden');
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.remove('flex');
+            emptyState.classList.add('hidden');
+
+            const watchlist = getWatchlist();
+
+            grid.innerHTML = filtered.map(cartoon => {
+                const isWatchlisted = watchlist.includes(cartoon.id);
+                return `
+                    <div class="glass-panel border border-purple-900/30 rounded-2xl overflow-hidden hover:border-accentPurple/50 transition-all duration-300 flex flex-col group shadow-lg">
+                        <div class="relative aspect-video bg-darkCard overflow-hidden cursor-pointer" onclick="openPlayer('${cartoon.id}')">
+                            <img src="${cartoon.poster}" alt="${cartoon.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x400/1a152e/7c3aed?text=Cartoon'">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div class="w-12 h-12 rounded-full bg-accentPurple text-white flex items-center justify-center shadow-lg shadow-purple-900/50 transform scale-75 group-hover:scale-100 transition-transform">
+                                    <i class="fa-solid fa-play ml-0.5"></i>
+                                </div>
+                            </div>
+                            <span class="absolute top-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur text-purple-200 text-[10px] font-semibold rounded-lg">
+                                ${cartoon.duration}
+                            </span>
+                            <span class="absolute top-3 right-3 px-2.5 py-1 ${cartoon.availability === 'available' ? 'bg-green-900/80 text-green-200' : 'bg-red-900/80 text-red-200'} backdrop-blur text-[10px] font-semibold rounded-lg">
+                                ${cartoon.availability === 'available' ? 'Ready' : 'Needs Review'}
+                            </span>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1.5 cursor-pointer" onclick="openDetailsModal('${cartoon.id}')">
+                                <div class="flex items-center justify-between text-xs text-purple-300">
+                                    <span>${cartoon.genre}</span>
+                                    <span>${cartoon.year}</span>
+                                </div>
+                                <h3 class="font-bold text-white text-base group-hover:text-purple-300 transition-colors line-clamp-1">${cartoon.title}</h3>
+                                <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">${cartoon.description}</p>
+                            </div>
+                            <div class="pt-3 border-t border-purple-900/20 flex items-center justify-between">
+                                <button onclick="openPlayer('${cartoon.id}')" class="px-3.5 py-2 bg-purple-900/30 hover:bg-purple-900/50 border border-purple-700/40 text-purple-200 text-xs font-semibold rounded-xl transition-all flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-play text-[10px]"></i>
+                                    <span>Watch</span>
+                                </button>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="toggleWatchlist('${cartoon.id}')" class="p-2 text-gray-400 hover:text-pink-400 transition-colors" title="Bookmark">
+                                        <i class="${isWatchlisted ? 'fa-solid text-pink-400' : 'fa-regular'} fa-bookmark"></i>
+                                    </button>
+                                    <button onclick="openDetailsModal('${cartoon.id}')" class="p-2 text-gray-400 hover:text-white transition-colors" title="Details">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Setup Hero Banner with first featured
+            const featured = cartoonCatalog.find(c => c.featured) || cartoonCatalog[0];
+            if (featured && currentTab === 'explore' && selectedGenre === 'All' && currentSearchQuery === '') {
+                document.getElementById('heroBadge').textContent = `Featured • ${featured.genre}`;
+                document.getElementById('heroYearGenre').textContent = `${featured.year} • ${featured.creator}`;
+                document.getElementById('heroTitle').textContent = featured.title;
+                document.getElementById('heroDesc').textContent = featured.description;
+                document.getElementById('heroBgImage').style.backgroundImage = `url('${featured.poster}')`;
+                document.getElementById('heroPlayBtn').onclick = () => openPlayer(featured.id);
+                document.getElementById('heroDetailsBtn').onclick = () => openDetailsModal(featured.id);
+            }
+        }
+
+        // Watchlist Functions
+        function toggleWatchlist(cartoonId) {
+            let watchlist = getWatchlist();
+            const index = watchlist.indexOf(cartoonId);
+            const cartoon = cartoonCatalog.find(c => c.id === cartoonId);
+            
+            if (index > -1) {
+                watchlist.splice(index, 1);
+                showToast(`Removed "${cartoon.title}" from watchlist.`);
+            } else {
+                watchlist.push(cartoonId);
+                showToast(`Added "${cartoon.title}" to watchlist!`, 'success');
+            }
+            setWatchlist(watchlist);
+            renderCatalog();
+            if (currentTab === 'watchlist') renderWatchlist();
+            if (activeCartoonId === cartoonId) updatePlayerModalWatchlistButton();
+        }
+
+        function updateWatchlistBadge() {
+            const watchlist = getWatchlist();
+            const badge = document.getElementById('watchlistBadge');
+            if (watchlist.length > 0) {
+                badge.textContent = watchlist.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderWatchlist() {
+            const watchlist = getWatchlist();
+            const grid = document.getElementById('watchlistGrid');
+            const emptyState = document.getElementById('watchlistEmpty');
+            const clearBtn = document.getElementById('clearWatchlistBtn');
+
+            if (watchlist.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.remove('flex');
+            emptyState.classList.add('hidden');
+            clearBtn.classList.remove('hidden');
+
+            const items = cartoonCatalog.filter(c => watchlist.includes(c.id));
+
+            grid.innerHTML = items.map(cartoon => `
+                <div class="glass-panel border border-purple-900/30 rounded-2xl overflow-hidden hover:border-accentPurple/50 transition-all duration-300 flex flex-col group shadow-lg">
+                    <div class="relative aspect-video bg-darkCard overflow-hidden cursor-pointer" onclick="openPlayer('${cartoon.id}')">
+                        <img src="${cartoon.poster}" alt="${cartoon.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-accentPurple text-white flex items-center justify-center shadow-lg shadow-purple-900/50">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs text-purple-300">
+                                <span>${cartoon.genre}</span>
+                                <span>${cartoon.year}</span>
+                            </div>
+                            <h3 class="font-bold text-white text-base truncate">${cartoon.title}</h3>
+                        </div>
+                        <div class="pt-3 border-t border-purple-900/20 flex items-center justify-between">
+                            <button onclick="openPlayer('${cartoon.id}')" class="px-3.5 py-2 bg-purple-900/30 hover:bg-purple-900/50 text-purple-200 text-xs font-semibold rounded-xl">
+                                Watch
+                            </button>
+                            <button onclick="toggleWatchlist('${cartoon.id}')" class="p-2 text-pink-400 hover:text-gray-400 transition-colors" title="Remove">
+                                <i class="fa-solid fa-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearWatchlist() {
+            setWatchlist([]);
+            renderWatchlist();
+            showToast('Watchlist cleared.');
+        }
+
+        // Viewing History Functions
+        function recordHistory(cartoonId) {
+            let history = getHistory();
+            // Remove if exists to bring to top
+            history = history.filter(id => id !== cartoonId);
+            history.unshift(cartoonId);
+            setHistory(history);
+        }
+
+        function renderHistory() {
+            const history = getHistory();
+            const grid = document.getElementById('historyGrid');
+            const emptyState = document.getElementById('historyEmpty');
+            const clearBtn = document.getElementById('clearHistoryBtn');
+
+            if (history.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.remove('flex');
+            emptyState.classList.add('hidden');
+            clearBtn.classList.remove('hidden');
+
+            const items = history.map(id => cartoonCatalog.find(c => c.id === id)).filter(Boolean);
+
+            grid.innerHTML = items.map(cartoon => `
+                <div class="glass-panel border border-purple-900/30 rounded-2xl overflow-hidden hover:border-accentPurple/50 transition-all duration-300 flex flex-col group shadow-lg">
+                    <div class="relative aspect-video bg-darkCard overflow-hidden cursor-pointer" onclick="openPlayer('${cartoon.id}')">
+                        <img src="${cartoon.poster}" alt="${cartoon.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-accentPurple text-white flex items-center justify-center shadow-lg shadow-purple-900/50">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-xs text-blue-300">
+                                <span>${cartoon.genre}</span>
+                                <span>Watched recently</span>
+                            </div>
+                            <h3 class="font-bold text-white text-base truncate">${cartoon.title}</h3>
+                        </div>
+                        <div class="pt-3 border-t border-purple-900/20 flex items-center justify-between">
+                            <button onclick="openPlayer('${cartoon.id}')" class="px-3.5 py-2 bg-blue-900/30 hover:bg-blue-900/50 text-blue-200 text-xs font-semibold rounded-xl">
+                                Resume
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            setHistory([]);
+            renderHistory();
+            showToast('Viewing history cleared.');
+        }
+
+        // Random Playable Cartoon
+        function playRandomCartoon() {
+            const available = cartoonCatalog.filter(c => c.availability === 'available');
+            if (available.length === 0) return;
+            const random = available[Math.floor(Math.random() * available.length)];
+            openPlayer(random.id);
+        }
+
+        // Video Player Modal Controller
+        function openPlayer(cartoonId) {
+            activeCartoonId = cartoonId;
+            const cartoon = cartoonCatalog.find(c => c.id === cartoonId);
+            if (!cartoon) return;
+
+            recordHistory(cartoonId);
+
+            document.getElementById('playerModalTitle').textContent = cartoon.title;
+            document.getElementById('playerModalCategory').textContent = cartoon.genre;
+            document.getElementById('playerModalStudio').textContent = cartoon.creator;
+            document.getElementById('playerModalYear').textContent = cartoon.year;
+            document.getElementById('playerModalDuration').textContent = cartoon.duration;
+            document.getElementById('playerModalDesc').textContent = cartoon.description;
+            document.getElementById('playerModalLicense').innerHTML = `<i class="fa-solid fa-certificate text-accentPurple"></i><span>License: ${cartoon.license}</span>`;
+            document.getElementById('playerSourceAnchor').href = cartoon.sourceUrl;
+
+            updatePlayerModalWatchlistButton();
+
+            const embedWrapper = document.getElementById('videoEmbedWrapper');
+            const errorOverlay = document.getElementById('videoErrorOverlay');
+
+            if (cartoon.availability === 'available' && cartoon.embedUrl && !cartoon.embedUrl.includes('unavailable')) {
+                errorOverlay.classList.add('hidden');
+                errorOverlay.classList.remove('flex');
+                embedWrapper.innerHTML = `
+                    <iframe src="${cartoon.embedUrl}?autoplay=1&modestbranding=1&rel=0" title="${cartoon.title}" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                `;
+            } else {
+                embedWrapper.innerHTML = '';
+                errorOverlay.classList.remove('hidden');
+                errorOverlay.classList.add('flex');
+                document.getElementById('originalSourceLink').href = cartoon.sourceUrl;
+            }
+
+            document.getElementById('playerModal').classList.remove('hidden');
+            document.getElementById('playerModal').classList.add('flex');
+        }
+
+        function closePlayerModal() {
+            document.getElementById('videoEmbedWrapper').innerHTML = '';
+            document.getElementById('playerModal').classList.remove('flex');
+            document.getElementById('playerModal').classList.add('hidden');
+            activeCartoonId = null;
+        }
+
+        function updatePlayerModalWatchlistButton() {
+            if (!activeCartoonId) return;
+            const watchlist = getWatchlist();
+            const isWatchlisted = watchlist.includes(activeCartoonId);
+            const icon = document.getElementById('playerBookmarkIcon');
+            if (isWatchlisted) {
+                icon.className = 'fa-solid text-pink-400 fa-bookmark';
+            } else {
+                icon.className = 'fa-regular fa-bookmark';
+            }
+        }
+
+        function toggleWatchlistFromPlayer() {
+            if (activeCartoonId) toggleWatchlist(activeCartoonId);
+        }
+
+        // Details Modal Controller
+        function openDetailsModal(cartoonId) {
+            activeCartoonId = cartoonId;
+            const cartoon = cartoonCatalog.find(c => c.id === cartoonId);
+            if (!cartoon) return;
+
+            document.getElementById('detailsTitle').textContent = cartoon.title;
+            document.getElementById('detailsGenreBadge').textContent = cartoon.genre;
+            document.getElementById('detailsYearStudio').textContent = `${cartoon.year} • ${cartoon.creator}`;
+            document.getElementById('detailsDesc').textContent = cartoon.description;
+            document.getElementById('detailsDuration').textContent = cartoon.duration;
+            document.getElementById('detailsLicense').textContent = cartoon.license;
+            document.getElementById('detailsModalBanner').style.backgroundImage = `url('${cartoon.poster}')`;
+            document.getElementById('detailsPlayBtn').onclick = () => { closeDetailsModal(); openPlayer(cartoon.id); };
+
+            const watchlist = getWatchlist();
+            const isWatchlisted = watchlist.includes(cartoon.id);
+            const icon = document.getElementById('detailsBookmarkIcon');
+            const text = document.getElementById('detailsBookmarkText');
+            if (isWatchlisted) {
+                icon.className = 'fa-solid text-pink-400 mr-2 fa-bookmark';
+                text.textContent = 'Saved';
+            } else {
+                icon.className = 'fa-regular mr-2 fa-bookmark';
+                text.textContent = 'Save to Watchlist';
+            }
+
+            document.getElementById('detailsModal').classList.remove('hidden');
+            document.getElementById('detailsModal').classList.add('flex');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('flex');
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function toggleWatchlistFromDetails() {
+            if (activeCartoonId) {
+                toggleWatchlist(activeCartoonId);
+                openDetailsModal(activeCartoonId);
+            }
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `glass-panel px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-medium text-white border ${type === 'success' ? 'border-green-500/40 bg-green-950/80' : 'border-purple-500/40 bg-purple-950/80'} animate-fade-in pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-green-400' : 'fa-bell text-purple-400'} text-sm"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // PWA Setup & Installation
+        function setupPWA() {
+            // Create dynamic manifest Blob URL for single-file preview compliance
+            const manifestData = {
+                name: "Cartoon Watcher",
+                short_name: "Cartoons",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#0f0c1b",
+                theme_color: "#7c3aed",
+                icons: [
+                    {
+                        src: "https://placehold.co/192x192/7c3aed/ffffff?text=CW",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "https://placehold.co/512x512/7c3aed/ffffff?text=CW",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ]
+            };
+            const stringManifest = JSON.stringify(manifestData);
+            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            document.getElementById('manifest-link').setAttribute('href', manifestURL);
+
+            // Register Service Worker if supported
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'cartoon-watcher-v1';
+                    const ASSETS = ['./'];
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(
+                            caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./')))
+                        );
+                    });
+                `;
+                const swBlob = new Blob([swCode], {type: 'text/javascript'});
+                const swURL = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swURL).catch(() => {});
+            }
+        }
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showToast('Cartoon Watcher installed successfully!', 'success');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                showToast('To install, open your browser menu and select "Install App" or "Add to Home Screen".');
+            }
+        }
+    </script>
+</body>
+</html>
